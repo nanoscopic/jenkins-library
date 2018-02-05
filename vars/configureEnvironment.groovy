@@ -28,11 +28,7 @@ Environment call(Map parameters = [:]) {
     timeout(90) {
         try {
             dir('automation/velum-bootstrap') {
-                withEnv([
-                    "ENVIRONMENT=${WORKSPACE}/environment.json",
-                ]) {
-                    sh(script: "./velum-interactions --configure")
-                }
+                sh(script: "./velum-interactions --configure --environment ${WORKSPACE}/environment.json")
             }
         } finally {
             dir('automation/velum-bootstrap') {
