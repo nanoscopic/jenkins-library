@@ -25,6 +25,9 @@ def call(Map parameters = [:]) {
         dir(repo) {
             if (!ignorePullRequest && env.JOB_NAME.contains(repo)) {
                 checkout scm
+
+                // Ensure the PR is rebased against the target branch
+                sh(script: "git rebase origin/${branch}")
             } else {
                 checkout([
                     $class: 'GitSCM',
