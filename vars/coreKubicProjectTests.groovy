@@ -21,18 +21,46 @@ def call(Map parameters = [:]) {
 
     echo "Starting Kubic core project tests"
 
-    stage('Run Node Tests') {
+    stage('Node Tests') {
         runTestInfra(environment: environment)
     }
 
-    // TODO - Run Cluster Tests
+    stage('Cluster Tests') {
+        parallel 'K8S Pod Tests': {
+            runK8SPodTests(
+                podName: podName,
+                replicaCount: replicaCount,
+                replicasCreationIntervalSeconds: replicasCreationIntervalSeconds
+            )
+        },
+        // TODO: Hardcoding this list of charts and values isn't nice...
+        'Helm: MariaDB': {
+            helmInstallClient()
 
-    // Run K8S Pod Tests
-    stage('K8S Pod Tests') {
-        runK8SPodTests(
-            podName: podName,
-            replicaCount: replicaCount,
-            replicasCreationIntervalSeconds: replicasCreationIntervalSeconds
-        )
+            String releaseName = "helm-" + UUID.randomUUID()
+            
+            helmInstallChart(
+                environment: environment,
+                releaseName: releaseName,
+                chartName: "stable/mariadb",
+                wait: true,
+                values: [
+                    service: [
+                        type: "NodePort"
+                    ],
+                    persistence: [
+                        enabled: false
+                    ]
+                ]
+            )
+
+            // TODO: Test if MariaDB is up and reachable and...
+
+            helmDeleteRelease(
+                environment: environment,
+                releaseName: releaseName,
+                purge: true
+            )
+        }
     }
 }
