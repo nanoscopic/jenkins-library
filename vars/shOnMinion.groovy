@@ -21,5 +21,5 @@ def call(Map parameters = [:]) {
 
     // TODO: returnStatus won't work right now as SSH considers it's job done
     // sucessfully when the command is ran remotely, even if it fails.
-    return sh(script: "ssh -F ${WORKSPACE}/automation/misc-tools/environment.ssh_config ${minion.fqdn} -- ${script}", returnStatus: returnStatus, returnStdout: returnStdout)
+    return sh(script: "ssh -F ${WORKSPACE}/automation/misc-tools/environment.ssh_config ${minion.fqdn} -- \"${script}\"", returnStatus: returnStatus, returnStdout: returnStdout)
 }

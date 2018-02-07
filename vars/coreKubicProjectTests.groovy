@@ -16,7 +16,7 @@ import com.suse.kubic.Environment
 def call(Map parameters = [:]) {
     Environment environment = parameters.get('environment')
     def podName = parameters.get('podName', 'default')
-    int replicaCount = parameters.get('replicaCount', 1000)
+    int replicaCount = parameters.get('replicaCount', 15)
     int replicasCreationIntervalSeconds = parameters.get('replicasCreationIntervalSeconds', 300)
 
     echo "Starting Kubic core project tests"
@@ -27,13 +27,12 @@ def call(Map parameters = [:]) {
 
     // TODO - Run Cluster Tests
 
-    // Create test pod
-    stage('Create Pod') {
-        createPod(
+    // Run K8S Pod Tests
+    stage('K8S Pod Tests') {
+        runK8SPodTests(
             podName: podName,
             replicaCount: replicaCount,
             replicasCreationIntervalSeconds: replicasCreationIntervalSeconds
         )
     }
-
 }
