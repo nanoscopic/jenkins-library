@@ -42,9 +42,19 @@ def call() {
         // Run the Core Project Tests
         coreKubicProjectTests(
           environment: environment,
-          podName: 'default',
-          replicaCount: 15,
-          replicasCreationIntervalSeconds: 600
+          podName: 'default'
+        )
+
+        // Run through the upgrade orchestration
+        upgradeEnvironment(
+            environment: environment,
+            fakeUpdatesAvailable: true
+        )
+
+        // Run the Core Project Tests again
+        coreKubicProjectTests(
+          environment: environment,
+          podName: 'default'
         )
     }
 }

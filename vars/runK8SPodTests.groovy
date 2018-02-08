@@ -32,8 +32,9 @@ def call(Map parameters = [:]) {
     def podName = parameters.get('podName', 'default')
     int replicaCount = parameters.get('replicaCount', 1000)
     int replicasCreationIntervalSeconds = parameters.get('replicasCreationIntervalSeconds', 300)
+
     dir("automation/k8s-pod-tests") {
-      timeout(5) {
+        timeout(5) {
             echo "Show running pods:"
             sh(script: "set -o pipefail; ${WORKSPACE}/automation/k8s-pod-tests/k8s-pod-tests -k ${WORKSPACE}/kubeconfig -l | tee -a ${WORKSPACE}/logs/kubectl-get-pods.log")
 
@@ -42,12 +43,16 @@ def call(Map parameters = [:]) {
 
             echo "Show running pods:"
             sh(script: "set -o pipefail; ${WORKSPACE}/automation/k8s-pod-tests/k8s-pod-tests -k ${WORKSPACE}/kubeconfig -l | tee -a ${WORKSPACE}/logs/kubectl-get-pods.log")
-      }
+        }
 
-      timeout(25) {
+        timeout(25) {
             echo "Scaling up"
             sh(script: "set -o pipefail; ${WORKSPACE}/automation/k8s-pod-tests/k8s-pod-tests -k ${WORKSPACE}/kubeconfig --wait --slowscale ${podName} ${replicaCount} ${replicasCreationIntervalSeconds} | tee -a ${WORKSPACE}/logs/kubectl-scale.log")
         }
+
+        timeout(5) {
+            echo "Tearing down"
+            sh(script: "set -o pipefail; ${WORKSPACE}/automation/k8s-pod-tests/k8s-pod-tests -k ${WORKSPACE}/kubeconfig -d ${WORKSPACE}/automation/k8s-pod-tests/yaml/${podName}.yml | tee -a ${WORKSPACE}/logs/kubectl-delete.log")
+        }
     }
 }
-
