@@ -14,7 +14,11 @@
 import com.suse.kubic.Environment
 
 def call(Map parameters = [:]) {
-    echo "Building Dependencies for Helm chart"
+    String chartName = parameters.get('chartName')
 
-    sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm dependency build 2>&1 | tee -a ${WORKSPACE}/logs/helm-dependency-build.log")
+    echo "Building Dependencies for Helm chart: ${chartName}"
+
+    String safeChartName = chartName.replaceAll('/', '-')
+
+    sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm dependency build ${chartName} 2>&1 | tee ${WORKSPACE}/logs/helm-dependency-build-${safeChartName}.log")
 }
