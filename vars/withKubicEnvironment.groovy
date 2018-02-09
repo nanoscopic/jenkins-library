@@ -18,12 +18,12 @@ def call(Map parameters = [:], Closure body) {
     def environmentType = parameters.get('environmentType', 'caasp-kvm')
     def environmentTypeOptions = parameters.get('environmentTypeOptions', null)
     boolean environmentDestroy = parameters.get('environmentDestroy', true)
-    def gitBase = parameters.get('gitBase')
-    def gitBranch = parameters.get('gitBranch')
-    def gitCredentialsId = parameters.get('gitCredentialsId')
+    def gitBase = parameters.get('gitBase', 'https://github.com/kubic-project')
+    def gitBranch = parameters.get('gitBranch', env.BRANCH_NAME)
+    def gitCredentialsId = parameters.get('gitCredentialsId', 'github-token')
     boolean gitIgnorePullRequest = parameters.get('gitIgnorePullRequest', false)
-    int masterCount = parameters.get('masterCount')
-    int workerCount = parameters.get('workerCount')
+    int masterCount = parameters.get('masterCount', 3)
+    int workerCount = parameters.get('workerCount', 2)
 
     echo "Creating Kubic Environment"
 
