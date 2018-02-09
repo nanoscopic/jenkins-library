@@ -1,4 +1,4 @@
-// Copyright 2017 SUSE LINUX GmbH, Nuernberg, Germany.
+// Copyright 2018 SUSE LINUX GmbH, Nuernberg, Germany.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
