@@ -32,6 +32,9 @@ def call(Map parameters = [:]) {
         },
         'caasp-container-manifests': {
             cloneKubicRepo(gitBase: gitBase, branch: branch, credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "caasp-container-manifests")
+        },
+        'caasp-services': {
+            cloneKubicRepo(gitBase: gitBase, branch: branch, credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "caasp-services")
         }
     }
 }
