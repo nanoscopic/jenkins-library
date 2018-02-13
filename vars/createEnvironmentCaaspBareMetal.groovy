@@ -26,7 +26,7 @@ Environment call(Map parameters = [:]) {
             withCredentials([file(credentialsId: 'caasp-bare-metal-serverlist', variable: 'SERVERLIST_PATH'),
                     file(credentialsId: 'caasp-bare-metal-conf', variable: 'CONFFILE')]) {
                 // Lock required nodes, power them off, deploy admin node
-                sh(script: "set -o pipefail; ./deployer ${JOB_NAME}-${BUILD_NUMBER} --admin --master-count ${masterCount} --worker-count ${workerCount} 2>&1 | tee ${WORKSPACE}/logs/caasp-bare-metal-deploy-admin.log")
+                sh(script: "set -o pipefail; ./deployer ${JOB_NAME}-${BUILD_NUMBER} --admin --master-count ${masterCount} --worker-count ${workerCount} --logsdir ${WORKSPACE}/logs 2>&1 | tee ${WORKSPACE}/logs/caasp-bare-metal-deploy-admin.log")
             }
 
             sh(script: "cp environment.json ${WORKSPACE}/environment.json")
