@@ -37,7 +37,7 @@ Environment call() {
             withCredentials([file(credentialsId: 'caasp-bare-metal-serverlist', variable: 'SERVERLIST_PATH'),
                     file(credentialsId: 'caasp-bare-metal-conf', variable: 'CONFFILE')]) {
                 // Deploy worker nodes and create environment.json
-                sh(script: 'set -o pipefail; ./deployer ${JOB_NAME}-${BUILD_NUMBER} --deploy-nodes 2>&1 | tee ${WORKSPACE}/logs/caasp-bare-metal-deploy-nodes.log')
+                sh(script: 'set -o pipefail; ./deployer ${JOB_NAME}-${BUILD_NUMBER} --deploy-nodes --logsdir ${WORKSPACE}/logs 2>&1 | tee ${WORKSPACE}/logs/caasp-bare-metal-deploy-nodes.log')
             }
 
             sh(script: "cp environment.json ${WORKSPACE}/environment.json")
