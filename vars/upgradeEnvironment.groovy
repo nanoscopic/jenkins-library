@@ -38,7 +38,7 @@ Environment call(Map parameters = [:]) {
         }
 
         // Perform the upgrade
-        timeout(30) {
+        timeout(90) {
             try {
                 dir('automation/velum-bootstrap') {
                     sh(script: "./velum-interactions --update-admin --environment ${WORKSPACE}/environment.json")
