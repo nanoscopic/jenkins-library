@@ -34,6 +34,8 @@ def call(Map parameters = [:], Closure body) {
             echo "Node: ${env.NODE_NAME}"
             echo "Workspace: ${env.WORKSPACE}"
             sh(script: 'ip a')
+            sh(script: 'ip r')
+            sh(script: 'cat /etc/resolv.conf')
             def response = httpRequest(url: 'http://169.254.169.254/latest/meta-data/public-ipv4')
             echo "Public IPv4: ${response.content}"
         }
