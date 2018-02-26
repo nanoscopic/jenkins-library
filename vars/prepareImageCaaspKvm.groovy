@@ -30,7 +30,7 @@ CaaspKvmTypeOptions call(Map parameters = [:]) {
         proxyFlag = "-P ${env.http_proxy}"
     }
 
-    timeout(120) {
+    timeout(240) {
         dir('automation/misc-tools') {
             withCredentials([string(credentialsId: 'caasp-proxy-host', variable: 'CAASP_PROXY')]) {
                 parallel 'CaaSP KVM': {
