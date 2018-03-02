@@ -37,6 +37,9 @@ Environment call(Map parameters = [:]) {
             )
         }
 
+        // Refresh Salt Grains (we could wait 10 mins, but that's 10 minutes wasted in CI)
+        shOnMinion(minion: adminMinion, script: "docker exec -i \\\$(docker ps | grep salt-master | awk '{print \\\$1}') salt '*' saltutil.refresh_grains")
+
         // Perform the upgrade
         timeout(90) {
             try {
