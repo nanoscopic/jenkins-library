@@ -19,6 +19,8 @@ Environment call(Map parameters = [:]) {
 
     // Run Transactional Update
     stage('TX Update') {
+        def parallelSteps = [:]
+
         environment.minions.each { minion ->
             def runTransactionalUpdate = {
                 // This run daily - avoid the risk of a race condition during the tests
