@@ -36,10 +36,6 @@ CaaspKvmTypeOptions call(Map parameters = [:]) {
                 parallel 'CaaSP KVM': {
                     sh(script: "set -o pipefail; ./download-image --proxy ${CAASP_PROXY} --type kvm channel://${options.channel} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-prepare-image-caasp.log")
                     options.image = "file://${WORKSPACE}/automation/downloads/kvm-${options.channel}"
-                },
-                'Velum Docker': {
-                    sh(script: "set -o pipefail; ./download-image --proxy ${CAASP_PROXY} --type docker --image-name sles12-velum-development channel://${options.channel} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-prepare-image-velum-development.log")
-                    options.velumImage = "file://${WORKSPACE}/automation/downloads/docker-sles12-velum-development-${options.channel}"
                 }
             }
         }
