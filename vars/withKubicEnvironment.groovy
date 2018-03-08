@@ -30,7 +30,7 @@ def call(Map parameters = [:], Closure body) {
     // Allocate a node
     node (nodeLabel) {
         // Show some info about the node were running on
-        stage('Node Info') {
+        kubicStage('Node Info') {
             echo "Node: ${env.NODE_NAME}"
             echo "Workspace: ${env.WORKSPACE}"
             sh(script: 'ip a')
@@ -41,18 +41,18 @@ def call(Map parameters = [:], Closure body) {
         }
 
         // Basic prep steps
-        stage('Preparation') {
+        kubicStage('Preparation') {
             cleanWs()
             sh(script: 'mkdir logs')
         }
 
         // Fetch the necessary code
-        stage('Retrieve Code') {
+        kubicStage('Retrieve Code') {
             cloneAllKubicRepos(gitBase: gitBase, branch: gitBranch, credentialsId: gitCredentialsId, ignorePullRequest: gitIgnorePullRequest)
         }
 
         // Fetch the necessary images
-        stage('Retrieve Image') {
+        kubicStage('Retrieve Image') {
             environmentTypeOptions = prepareImage(
                 type: environmentType,
                 typeOptions: environmentTypeOptions
@@ -61,108 +61,89 @@ def call(Map parameters = [:], Closure body) {
 
         Environment environment;
 
-        try {
-            // Create the Kubic environment
-            stage('Create Environment') {
-                environment = createEnvironment(
+        // Create the Kubic environment
+        kubicStage('Create Environment') {
+            error('Force a failure in CE')
+            environment = createEnvironment(
+                type: environmentType,
+                typeOptions: environmentTypeOptions,
+                masterCount: masterCount,
+                workerCount: workerCount
+            )
+        }
+
+        // Configure the Kubic environment
+        kubicStage('Configure Environment') {
+            configureEnvironment(environment: environment)
+        }
+
+        // Create Workers
+        kubicStage('Create Environment Workers') {
+            environment = createEnvironmentWorkers(
+                environment: environment,
+                type: environmentType,
+                typeOptions: environmentTypeOptions,
+                masterCount: masterCount,
+                workerCount: workerCount
+            )
+        }
+
+        // Bootstrap the Kubic environment
+        // and fetch ${WORKSPACE}/kubeconfig
+        kubicStage('Bootstrap Environment') {
+            bootstrapEnvironment(environment: environment)
+        }
+
+        // Prepare the body closure delegate
+        def delegate = [:]
+        // Set some context variables available inside the body() method
+        delegate['environment'] = environment
+        body.delegate = delegate
+
+        // Execute the body of the test
+        body()
+        
+        // Gather logs from the environment
+        kubicStage('Gather Logs', skipOnFailure: false) {
+            gatherKubicLogs(environment: environment)
+            error('Force a failure')
+        }
+
+        // Destroy the Kubic Environment
+        kubicStage('Destroy Environment', skipOnFailure: false) {
+            if (environmentDestroy) {
+                cleanupEnvironment(
                     type: environmentType,
                     typeOptions: environmentTypeOptions,
                     masterCount: masterCount,
                     workerCount: workerCount
                 )
+            } else {
+                echo "Skipping Destroy Environment as requested"
             }
+        }
 
-            // Configure the Kubic environment
-            stage('Configure Environment') {
-                configureEnvironment(environment: environment)
+        // Archive the logs
+        kubicStage('Archive Logs', skipOnFailure: false) {
+            archiveArtifacts(artifacts: 'logs/**', fingerprint: true)
+        }
+
+        kubicStage('Archive Results', skipOnFailure: false) {
+            echo "Writing logs to database"
+
+            withCredentials([
+                string(credentialsId: 'database-host', variable: 'DBHOST'),
+                string(credentialsId: 'database-password', variable: 'DBPASS')
+            ]) {
+                String status = currentBuild.currentResult
+                def starttime = new Date(currentBuild.startTimeInMillis).format("yyyy-MM-dd HH:mm")
+                sh(script: "/usr/bin/mysql -h ${DBHOST} -u jenkins -p${DBPASS} testplan -e \"INSERT INTO test_outcome (build_num, build_url, branch, status, pipeline, start_time) VALUES (\'$BUILD_NUMBER\', \'$BUILD_URL\', \'$BRANCH_NAME\', \'${status}\', \'$JOB_NAME\', \'${starttime}\') \" ")
             }
+        }
 
-            // Create Workers
-            stage('Create Environment Workers') {
-                environment = createEnvironmentWorkers(
-                    environment: environment,
-                    type: environmentType,
-                    typeOptions: environmentTypeOptions,
-                    masterCount: masterCount,
-                    workerCount: workerCount
-                )
-            }
-
-            // Bootstrap the Kubic environment
-            // and fetch ${WORKSPACE}/kubeconfig
-            stage('Bootstrap Environment') {
-                bootstrapEnvironment(environment: environment)
-            }
-
-            // Prepare the body closure delegate
-            def delegate = [:]
-            // Set some context variables available inside the body() method
-            delegate['environment'] = environment
-            body.delegate = delegate
-
-            // Execute the body of the test
-            body()
-        } finally {
-            // Gather logs from the environment
-            stage('Gather Logs') {
-                try {
-                    gatherKubicLogs(environment: environment)
-                } catch (Exception exc) {
-                    // TODO: Figure out if we can mark this stage as failed, while allowing the remaining stages to proceed.
-                    echo "Failed to Gather Logs"
-                }
-            }
-
-            // Destroy the Kubic Environment
-            stage('Destroy Environment') {
-                if (environmentDestroy) {
-                    try {
-                        cleanupEnvironment(
-                            type: environmentType,
-                            typeOptions: environmentTypeOptions,
-                            masterCount: masterCount,
-                            workerCount: workerCount
-                        )
-                    } catch (Exception exc) {
-                        // TODO: Figure out if we can mark this stage as failed, while allowing the remaining stages to proceed.
-                        echo "Failed to Destroy Environment"
-                    }
-                } else {
-                    echo "Skipping Destroy Environment as requested"
-                }
-            }
-
-            // Archive the logs
-            stage('Archive Logs') {
-                try {
-                    archiveArtifacts(artifacts: 'logs/**', fingerprint: true)
-                } catch (Exception exc) {
-                    // TODO: Figure out if we can mark this stage as failed, while allowing the remaining stages to proceed.
-                    echo "Failed to Archive Logs"
-                }
-                echo "Writing logs to database"
-                try {
-                  withCredentials([string(credentialsId: 'database-host', variable: 'DBHOST')]) {
-                    withCredentials([string(credentialsId: 'database-password', variable: 'DBPASS')]) {
-                      String status = currentBuild.currentResult
-                      def starttime = new Date(currentBuild.startTimeInMillis).format("yyyy-MM-dd HH:mm")
-                      sh(script: "/usr/bin/mysql -h ${DBHOST} -u jenkins -p${DBPASS} testplan -e \"INSERT INTO test_outcome (build_num, build_url, branch, status, pipeline, start_time) VALUES (\'$BUILD_NUMBER\', \'$BUILD_URL\', \'$BRANCH_NAME\', \'${status}\', \'$JOB_NAME\', \'${starttime}\') \" ")
-                    }
-                  }
-                } catch (Exception exc) {
-                    echo "Failed to write to database"
-                }
-            }
-
-            // Cleanup the node
-            stage('Cleanup') {
-                try {
-                    cleanWs()
-                } catch (Exception exc) {
-                    // TODO: Figure out if we can mark this stage as failed, while allowing the remaining stages to proceed.
-                    echo "Failed to clean workspace"
-                }
-            }
+        // Cleanup the node
+        kubicStage('Cleanup', skipOnFailure: false) {
+            cleanWs()
         }
     }
 }
