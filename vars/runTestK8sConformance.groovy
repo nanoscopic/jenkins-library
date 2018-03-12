@@ -22,7 +22,7 @@ def call(Map parameters = [:]) {
             }
         } finally {
             archiveArtifacts(artifacts: "results/**")
-            junit("results/report/plugins/e2e/results/*.xml")
+            junit("results/plugins/e2e/results/*.xml")
         }
     }
 }
