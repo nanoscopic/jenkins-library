@@ -44,8 +44,11 @@ Environment call(Map parameters = [:]) {
 
     timeout(120) {
         dir('automation/caasp-kvm') {
-            withCredentials([string(credentialsId: 'caasp-proxy-host', variable: 'CAASP_PROXY')]) {
-                sh(script: "set -o pipefail; ./caasp-kvm -P ${CAASP_PROXY} ${vanillaFlag} --build --disable-meltdown-spectre-fixes -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-build.log")
+            withCredentials([
+                string(credentialsId: 'caasp-proxy-host', variable: 'proxy'),
+                string(credentialsId: 'caasp-location', variable: 'location')
+            ]) {
+                sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --build --disable-meltdown-spectre-fixes -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-build.log")
             }
 
             // Read the generated environment file
