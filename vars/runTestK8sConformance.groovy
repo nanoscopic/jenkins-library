@@ -17,11 +17,12 @@ def call(Map parameters = [:]) {
         try {
             timeout(2 * 60 * 60) {
                 ansiColor {
-                    sh(script: "./e2e-tests --kubeconfig ${WORKSPACE}/kubeconfig --artifacts report --log ${WORKSPACE}/logs/k8s-e2e-tests.log")
+                    sh(script: "./e2e-tests --kubeconfig ${WORKSPACE}/kubeconfig")
                 }
             }
         } finally {
-            junit("report/plugins/e2e/results/*.xml")
+            archiveArtifacts(artifacts: "results/**")
+            junit("results/report/plugins/e2e/results/*.xml")
         }
     }
 }
