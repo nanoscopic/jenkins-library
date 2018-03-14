@@ -54,7 +54,10 @@ def call(Map parameters = [:]) {
                 ]
             )
 
-            // TODO: Test if MariaDB is up and reachable and...
+            helmTestRelease(
+                environment: environment,
+                releaseName: releaseName
+            )
 
             helmDeleteRelease(
                 environment: environment,

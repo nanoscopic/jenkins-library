@@ -17,7 +17,7 @@ def call() {
     lock("helm-install-client") {
         // This whole thing is a hack, we should be using our builds of the
         // helm client.
-        sh(script: "wget -O /tmp/helm.tar.gz https://kubernetes-helm.storage.googleapis.com/helm-v2.7.2-linux-amd64.tar.gz")
+        sh(script: "wget -O /tmp/helm.tar.gz https://kubernetes-helm.storage.googleapis.com/helm-v2.8.2-linux-amd64.tar.gz")
         sh(script: "tar --directory /tmp -xzvf /tmp/helm.tar.gz")
         sh(script: "mv /tmp/linux-amd64/helm ${WORKSPACE}/helm")
         sh(script: "${WORKSPACE}/helm --home ${WORKSPACE}/.helm init --client-only")
