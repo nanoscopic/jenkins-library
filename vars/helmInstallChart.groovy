@@ -33,7 +33,11 @@ def call(Map parameters = [:]) {
     archiveArtifacts(artifacts: "helm-values-${safeChartName}-${releaseName}.yaml", fingerprint: true)
 
     withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
-        sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm install ${chartName} ${waitFlag} --name ${releaseName} --values helm-values-${safeChartName}-${releaseName}.yaml 2>&1 | tee ${WORKSPACE}/logs/helm-install-${releaseName}-${safeChartName}.log")
+        sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm install ${chartName} ${waitFlag} --namespace ${releaseName} --name ${releaseName} --values helm-values-${safeChartName}-${releaseName}.yaml 2>&1 | tee ${WORKSPACE}/logs/helm-install-${releaseName}-${safeChartName}.log")
+    }
+
+    if (wait) {
+        sh(script: "${WORKSPACE}/automation/misc-tools/verify-pods-in-ns.sh ${WORKSPACE}/kubeconfig ${releaseName}")
     }
 
     return releaseName
