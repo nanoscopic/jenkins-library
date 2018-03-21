@@ -16,7 +16,7 @@ import com.suse.kubic.Environment
 def call(Map parameters = [:]) {
     Environment environment = parameters.get('environment')
     String releaseName = parameters.get('releaseName')
-    boolean cleanup = parameters.get('cleanup', true)
+    boolean cleanup = parameters.get('cleanup', false)
     int timeout = parameters.get('timeout', 600)
 
     echo "Testing Helm release: ${releaseName}"

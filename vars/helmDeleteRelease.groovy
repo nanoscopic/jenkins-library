@@ -27,5 +27,6 @@ def call(Map parameters = [:]) {
 
     withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
         sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm delete ${purgeFlag} ${releaseName} 2>&1 | tee ${WORKSPACE}/logs/helm-delete-${releaseName}.log")
+        sh(script: "set -o pipefail; kubectl delete namespace ${releaseName} 2>&1 | tee -a ${WORKSPACE}/logs/helm-delete-${releaseName}.log")
     }
 }
