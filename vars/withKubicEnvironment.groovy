@@ -13,16 +13,17 @@
 // limitations under the License.
 import com.suse.kubic.Environment
 
-def call(Map parameters = [:], Closure body) {
-    def nodeLabel = parameters.get('nodeLabel', 'leap42.3&&m1.xxlarge')
+def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
+    def nodeLabel = parameters.get('nodeLabel', 'leap42.3&&32GB')
     def environmentType = parameters.get('environmentType', 'caasp-kvm')
     def environmentTypeOptions = parameters.get('environmentTypeOptions', null)
     boolean environmentDestroy = parameters.get('environmentDestroy', true)
-    def gitBase = parameters.get('gitBase')
-    def gitBranch = parameters.get('gitBranch')
-    def gitCredentialsId = parameters.get('gitCredentialsId')
-    int masterCount = parameters.get('masterCount')
-    int workerCount = parameters.get('workerCount')
+    def gitBase = parameters.get('gitBase', 'https://github.com/kubic-project')
+    def gitBranch = parameters.get('gitBranch', env.getEnvironment().get('CHANGE_TARGET', env.BRANCH_NAME))
+    def gitCredentialsId = parameters.get('gitCredentialsId', 'github-token')
+    boolean gitIgnorePullRequest = parameters.get('gitIgnorePullRequest', false)
+    int masterCount = parameters.get('masterCount', 3)
+    int workerCount = parameters.get('workerCount', 2)
 
     echo "Creating Kubic Environment"
 
@@ -33,6 +34,8 @@ def call(Map parameters = [:], Closure body) {
             echo "Node: ${env.NODE_NAME}"
             echo "Workspace: ${env.WORKSPACE}"
             sh(script: 'ip a')
+            sh(script: 'ip r')
+            sh(script: 'cat /etc/resolv.conf')
             def response = httpRequest(url: 'http://169.254.169.254/latest/meta-data/public-ipv4')
             echo "Public IPv4: ${response.content}"
         }
@@ -45,7 +48,7 @@ def call(Map parameters = [:], Closure body) {
 
         // Fetch the necessary code
         stage('Retrieve Code') {
-            cloneAllKubicRepos(gitBase: gitBase, branch: gitBranch, credentialsId: gitCredentialsId)
+            cloneAllKubicRepos(gitBase: gitBase, branch: gitBranch, credentialsId: gitCredentialsId, ignorePullRequest: gitIgnorePullRequest)
         }
 
         // Fetch the necessary images
@@ -69,6 +72,17 @@ def call(Map parameters = [:], Closure body) {
                 )
             }
 
+            if (preBootstrapBody != null) {
+                // Prepare the body closure delegate
+                def delegate = [:]
+                // Set some context variables available inside the preBootstrapBody() method
+                delegate['environment'] = environment
+                preBootstrapBody.delegate = delegate
+
+                // Execute the preBootstrapBody of the test
+                preBootstrapBody()
+            }
+
             // Configure the Kubic environment
             stage('Configure Environment') {
                 configureEnvironment(environment: environment)
@@ -86,6 +100,7 @@ def call(Map parameters = [:], Closure body) {
             }
 
             // Bootstrap the Kubic environment
+            // and fetch ${WORKSPACE}/kubeconfig
             stage('Bootstrap Environment') {
                 bootstrapEnvironment(environment: environment)
             }
@@ -135,6 +150,18 @@ def call(Map parameters = [:], Closure body) {
                 } catch (Exception exc) {
                     // TODO: Figure out if we can mark this stage as failed, while allowing the remaining stages to proceed.
                     echo "Failed to Archive Logs"
+                }
+                echo "Writing logs to database"
+                try {
+                  withCredentials([string(credentialsId: 'database-host', variable: 'DBHOST')]) {
+                    withCredentials([string(credentialsId: 'database-password', variable: 'DBPASS')]) {
+                      String status = currentBuild.currentResult
+                      def starttime = new Date(currentBuild.startTimeInMillis).format("yyyy-MM-dd HH:mm")
+                      sh(script: "/usr/bin/mysql -h ${DBHOST} -u jenkins -p${DBPASS} testplan -e \"INSERT INTO test_outcome (build_num, build_url, branch, status, pipeline, start_time) VALUES (\'$BUILD_NUMBER\', \'$BUILD_URL\', \'$BRANCH_NAME\', \'${status}\', \'$JOB_NAME\', \'${starttime}\') \" ")
+                    }
+                  }
+                } catch (Exception exc) {
+                    echo "Failed to write to database"
                 }
             }
 

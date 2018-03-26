@@ -17,28 +17,24 @@ import com.suse.kubic.Environment
 Environment call(Map parameters = [:]) {
     Environment environment = parameters.get('environment')
 
-    // TODO: This and bootstrapEnvironment share 90% of the same code
+    // Run Transactional Update
+    stage('TX Update') {
+        def parallelSteps = [:]
 
-    timeout(90) {
-        dir('automation/velum-bootstrap') {
-            sh(script: './velum-interactions --setup')
+        environment.minions.each { minion ->
+            def runTransactionalUpdate = {
+                // This run daily - avoid the risk of a race condition during the tests
+                // Since this timer runs nightly, we want to disable and stop it before we run
+                // transactional-update ourselves.
+                shOnMinion(minion: minion, script: 'systemctl disable --now transactional-update.timer')
+                shOnMinion(minion: minion, script: '/usr/sbin/transactional-update cleanup dup salt')
+            }
+
+            parallelSteps.put("${minion.role}-${minion.index}", runTransactionalUpdate)
         }
-    }
 
-    timeout(90) {
-        try {
-            dir('automation/velum-bootstrap') {
-                sh(script: "./velum-interactions --configure --environment ${WORKSPACE}/environment.json")
-            }
-        } finally {
-            dir('automation/velum-bootstrap') {
-                junit "velum-bootstrap.xml"
-                try {
-                    archiveArtifacts(artifacts: "screenshots/**")
-                } catch (Exception exc) {
-                    echo "Failed to Archive Artifacts"
-                }
-            }
+        timeout(90) {
+            parallel(parallelSteps)
         }
     }
 }

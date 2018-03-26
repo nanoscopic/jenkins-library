@@ -16,13 +16,14 @@ def call(Map parameters = [:]) {
     def gitBase = parameters.get('gitBase')
     def branch = parameters.get('branch')
     def credentialsId = parameters.get('credentialsId')
+    boolean ignorePullRequest = parameters.get('ignorePullRequest', false)
     def repo = parameters.get('repo')
 
     echo "Cloning Kubic Repo: ${repo}"
 
     timeout(5) {
         dir(repo) {
-            if (env.JOB_NAME.contains(repo)) {
+            if (!ignorePullRequest && env.JOB_NAME.contains(repo)) {
                 checkout scm
             } else {
                 checkout([

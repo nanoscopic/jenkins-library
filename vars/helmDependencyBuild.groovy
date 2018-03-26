@@ -11,18 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import com.suse.kubic.Environment
+
 def call(Map parameters = [:]) {
-    OpenstackTypeOptions options = parameters.get('typeOptions', null)
+    String chartName = parameters.get('chartName')
 
-    timeout(30) {
-        dir('automation/caasp-openstack-heat') {
-            String stackName = "${JOB_NAME}-${BUILD_NUMBER}".replace("/", "-")
+    echo "Building Dependencies for Helm chart: ${chartName}"
 
-            withCredentials([file(credentialsId: options.openrcCredentialId, variable: 'OPENRC')]) {
-                retry(10) {
-                    sh(script: "set -o pipefail; ./caasp-openstack --openrc ${OPENRC} --name ${stackName} -d 2>&1 | tee ${WORKSPACE}/logs/caasp-openstack-heat-destroy.log")
-                }
-            }
-        }
-    }
+    String safeChartName = chartName.replaceAll('/', '-')
+
+    sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm dependency build ${chartName} 2>&1 | tee ${WORKSPACE}/logs/helm-dependency-build-${safeChartName}.log")
 }

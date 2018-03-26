@@ -25,15 +25,11 @@ Environment call(Map parameters = [:]) {
         }
     }
 
-    timeout(90) {
+    timeout(125) {
         try {
             dir('automation/velum-bootstrap') {
-                withEnv([
-                    "ENVIRONMENT=${WORKSPACE}/environment.json",
-                ]) {
-                    sh(script: "./velum-interactions --bootstrap")
-                    sh(script: "cp kubeconfig ${WORKSPACE}/kubeconfig")
-                }
+                sh(script: "./velum-interactions --bootstrap --download-kubeconfig --enable-tiller --environment ${WORKSPACE}/environment.json")
+                sh(script: "cp kubeconfig ${WORKSPACE}/kubeconfig")
             }
         } finally {
             dir('automation/velum-bootstrap') {

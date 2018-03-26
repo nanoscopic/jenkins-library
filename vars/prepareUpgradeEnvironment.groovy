@@ -11,18 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-def call(Map parameters = [:]) {
-    OpenstackTypeOptions options = parameters.get('typeOptions', null)
+import com.suse.kubic.Environment
 
-    timeout(30) {
-        dir('automation/caasp-openstack-heat') {
-            String stackName = "${JOB_NAME}-${BUILD_NUMBER}".replace("/", "-")
 
-            withCredentials([file(credentialsId: options.openrcCredentialId, variable: 'OPENRC')]) {
-                retry(10) {
-                    sh(script: "set -o pipefail; ./caasp-openstack --openrc ${OPENRC} --name ${stackName} -d 2>&1 | tee ${WORKSPACE}/logs/caasp-openstack-heat-destroy.log")
-                }
-            }
+Environment call(Map parameters = [:]) {
+    Environment environment = parameters.get('environment')
+    Map<String,String> extraRepos = parameters.get('extraRepos', new HashMap<String,String>())
+
+    stage('Prepare Upgrade Environment') {
+        // Inject the extra repos
+        extraRepos.each { extraRepoAlias, extraRepoUrl ->
+            sh(script: "set -o pipefail; ./automation/misc-tools/inject_repo.sh $extraRepoUrl $extraRepoAlias 2>&1 | tee ${WORKSPACE}/logs/inject-repos-${extraRepoAlias}.log")
         }
     }
 }
