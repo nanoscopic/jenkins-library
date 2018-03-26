@@ -40,7 +40,7 @@ parameters:
   worker_flavor: ${options.workerFlavor}
 """)
 
-            withCredentials([file(credentialsId: 'prvcld-openrc-caasp-ci-tests', variable: 'OPENRC')]) {
+            withCredentials([file(credentialsId: options.openrcCredentialId, variable: 'OPENRC')]) {
                 sh(script: "set -o pipefail; ./caasp-openstack --openrc ${OPENRC} --heat-environment heat-environment.yaml -b -w ${workerCount} --image ${options.image} --name ${stackName} 2>&1 | tee ${WORKSPACE}/logs/caasp-openstack-heat-build.log")
             }
 
