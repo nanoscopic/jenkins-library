@@ -26,9 +26,6 @@ CaaspBareMetalTypeOptions call(Map parameters = [:]) {
         return options
     }
 
-    // TODO: Channel should be a param
-    String channel = "devel"
-
     // TODO: Set the iso name into options.image - then use that as the image
     // to deploy later in the job.
 

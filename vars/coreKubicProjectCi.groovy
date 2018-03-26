@@ -31,7 +31,7 @@ def call() {
     ])
 
     withKubicEnvironment(
-            nodeLabel: 'leap42.3&&m1.xxlarge',
+            nodeLabel: 'leap42.3&&32GB',
             environmentType: 'caasp-kvm',
             gitBase: 'https://github.com/kubic-project',
             gitBranch: env.getEnvironment().get('CHANGE_TARGET', env.BRANCH_NAME),
@@ -39,9 +39,22 @@ def call() {
             masterCount: 3,
             workerCount: 2) {
 
-        stage('Run Tests') {
-            // TODO: Add some cluster tests, e.g. booting pods, checking they work, etc
-            runTestInfra(environment: environment)
-        }
+        // Run the Core Project Tests
+        coreKubicProjectTests(
+          environment: environment,
+          podName: 'default'
+        )
+
+        // Run through the upgrade orchestration
+        upgradeEnvironment(
+            environment: environment,
+            fakeUpdatesAvailable: true
+        )
+
+        // Run the Core Project Tests again
+        coreKubicProjectTests(
+          environment: environment,
+          podName: 'default'
+        )
     }
 }

@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-def call(Map parameters = [:], Closure body = null) {
-    String nodeLabel = parameters.get('nodeLabel', 'leap42.3&&m1.xxlarge')
+def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body = null) {
+    String nodeLabel = parameters.get('nodeLabel', 'leap42.3&&32GB')
     String environmentType = parameters.get('environmentType', 'caasp-kvm')
     def environmentTypeOptions = parameters.get('environmentTypeOptions', null)
     boolean environmentDestroy = parameters.get('environmentDestroy', true)
@@ -32,12 +32,16 @@ def call(Map parameters = [:], Closure body = null) {
                 gitBranch: env.getEnvironment().get('CHANGE_TARGET', env.BRANCH_NAME),
                 gitCredentialsId: 'github-token',
                 masterCount: masterCount,
-                workerCount: workerCount) {
+                workerCount: workerCount,
+                preBootstrapBody: preBootstrapBody) {
 
-            stage('Run Basic Tests') {
-                // TODO: Add some cluster tests, e.g. booting pods, checking they work, etc
-                runTestInfra(environment: environment)
-            }
+            // Run the Core Project Tests
+            coreKubicProjectTests(
+              environment: environment,
+              podName: 'default',
+              replicaCount: 15,
+              replicasCreationIntervalSeconds: 600
+            )
 
             if (body != null) {
                 // Prepare the body closure delegate
