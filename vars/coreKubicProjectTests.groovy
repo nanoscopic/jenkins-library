@@ -43,6 +43,7 @@ def call(Map parameters = [:]) {
                 environment: environment,
                 releaseName: releaseName,
                 chartName: "stable/mariadb",
+                chartVersion: "3.0.0",
                 wait: true,
                 values: [
                     service: [

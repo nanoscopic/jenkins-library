@@ -17,6 +17,7 @@ def call(Map parameters = [:]) {
     Environment environment = parameters.get('environment')
     String releaseName = parameters.get('releaseName')
     String chartName = parameters.get('chartName')
+    String chartVersion = parameters.get('chartVersion')
     boolean wait = parameters.get('wait', false)
     Map values = parameters.get('values', [:])
 
@@ -27,13 +28,18 @@ def call(Map parameters = [:]) {
         waitFlag = "--wait"
     }
 
+    String versionFlag = ""
+    if (chartVersion) {
+        versionFlag = "--version ${chartVersion}"
+    }
+
     String safeChartName = chartName.replaceAll('/', '-')
 
     writeYaml(file: "helm-values-${safeChartName}-${releaseName}.yaml", data: values)
     archiveArtifacts(artifacts: "helm-values-${safeChartName}-${releaseName}.yaml", fingerprint: true)
 
     withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
-        sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm install ${chartName} ${waitFlag} --namespace ${releaseName} --name ${releaseName} --values helm-values-${safeChartName}-${releaseName}.yaml 2>&1 | tee ${WORKSPACE}/logs/helm-install-${releaseName}-${safeChartName}.log")
+        sh(script: "set -o pipefail; ${WORKSPACE}/helm --home ${WORKSPACE}/.helm install ${chartName} ${waitFlag} ${versionFlag} --namespace ${releaseName} --name ${releaseName} --values helm-values-${safeChartName}-${releaseName}.yaml 2>&1 | tee ${WORKSPACE}/logs/helm-install-${releaseName}-${safeChartName}.log")
     }
 
     if (wait) {
