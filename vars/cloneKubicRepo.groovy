@@ -24,7 +24,35 @@ def call(Map parameters = [:]) {
     timeout(5) {
         dir(repo) {
             if (!ignorePullRequest && env.JOB_NAME.contains(repo)) {
-                checkout scm
+                if (env.CHANGE_ID) {
+                    echo 'Attempting rebase...'
+
+                    checkout([
+                        $class: 'GitSCM',
+                        branches:  [[name: "*/${env.CHANGE_TARGET}"]],
+                        extensions: [
+                            [$class: 'LocalBranch'],
+                            [$class: 'CleanCheckout']
+                        ],
+                        userRemoteConfigs: [
+                            [url:"${gitBase}/${repo}.git", credentialsId: credentialsId]
+                        ]
+                    ])
+
+                    def gitVars = checkout scm
+                    def rebaseScript = "git -c 'user.name=${gitVars.GIT_COMMITTER_NAME}' -c 'user.email=${gitVars.GIT_COMMITTER_EMAIL}' rebase ${env.CHANGE_TARGET}"
+                    def rebaseCode = sh(script: rebaseScript, returnStatus: true)
+
+                    if (rebaseCode) {
+                        sh('git rebase --abort')
+                        error("Rebase failed with code: '${rebaseCode}'. Manual rebase required.")
+                    } else {
+                        echo 'Rebase successful!'
+                    }
+                } else {
+                    checkout scm
+                }
+
             } else {
                 checkout([
                     $class: 'GitSCM',
