@@ -40,6 +40,16 @@ Environment call(Map parameters = [:]) {
         vanillaFlag = "--vanilla"
     }
 
+    def velumImage = "channel://${options.channel}"
+    if (options.velumImage) {
+        velumImage = "${options.velumImage}"
+    }
+
+    def extraRepo = ""
+    if (options.extraRepo) {
+        extraRepo = "--extra-repo ${options.extraRepo}"
+    }
+
     timeout(120) {
         dir('automation/caasp-kvm') {
             try {
@@ -47,7 +57,7 @@ Environment call(Map parameters = [:]) {
                     string(credentialsId: 'caasp-proxy-host', variable: 'proxy'),
                     string(credentialsId: 'caasp-location', variable: 'location')
                 ]) {
-                    sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --update-deployment -m ${masterCount} -w ${workerCount} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-update-deployment.log")
+                    sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --update-deployment --disable-meltdown-spectre-fixes -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} ${extraRepo} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-update.log")
                 }
             } finally {
                 archiveArtifacts(artifacts: 'cluster.tf', fingerprint: true)
