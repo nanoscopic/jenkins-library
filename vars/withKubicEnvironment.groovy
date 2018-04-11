@@ -77,6 +77,7 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
                 def delegate = [:]
                 // Set some context variables available inside the preBootstrapBody() method
                 delegate['environment'] = environment
+                delegate['environmentTypeOptions'] = environmentTypeOptions
                 preBootstrapBody.delegate = delegate
 
                 // Execute the preBootstrapBody of the test
@@ -109,6 +110,7 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
             def delegate = [:]
             // Set some context variables available inside the body() method
             delegate['environment'] = environment
+            delegate['environmentTypeOptions'] = environmentTypeOptions
             body.delegate = delegate
 
             // Execute the body of the test
