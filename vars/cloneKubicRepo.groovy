@@ -24,45 +24,7 @@ def call(Map parameters = [:]) {
     timeout(5) {
         dir(repo) {
             if (!ignorePullRequest && env.JOB_NAME.contains(repo)) {
-                if (env.CHANGE_ID) {
-                    def changeTarget = env.getEnvironment().get('CHANGE_TARGET', 'master')
-
-                    checkout([
-                        $class: 'GitSCM',
-                        branches:  [[name: "*/${changeTarget}"]],
-                        extensions: [
-                            [$class: 'LocalBranch'],
-                            [$class: 'CleanCheckout']
-                        ],
-                        userRemoteConfigs: [
-                            [url:"${gitBase}/${repo}.git", credentialsId: credentialsId]
-                        ]
-                    ])
-
-                    res = checkout([
-                        $class: 'GitSCM',
-                        branches:  [[name: "*/${env.BRANCH_NAME}"]],
-                        extensions: [
-                            [$class: 'LocalBranch'],
-                            [$class: 'CleanCheckout']
-                        ],
-                        userRemoteConfigs: [
-                            [url: "${gitBase}/${repo}.git", credentialsId: credentialsId]
-                        ]
-                    ])
-
-                    rebaseCode = sh(script: "git -c 'user.name=${res.GIT_COMMITTER_NAME}' -c 'user.email=${res.GIT_COMMITTER_EMAIL}' rebase ${changeTarget}", returnStatusCode: true)
-
-                    if (rebaseCode) {
-                        sh('git rebase --abort')
-                        error("Rebase failed with code: '${rebaseCode}'. Manual rebase required.")
-                    } else {
-                        echo "Rebase successful!"
-                    }
-                } else {
-                    checkout scm
-                }
-
+                checkout scm
             } else {
                 checkout([
                     $class: 'GitSCM',
