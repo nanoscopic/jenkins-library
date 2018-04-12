@@ -46,15 +46,15 @@ def call() {
         )
 
         // Run through the upgrade orchestration
-        upgradeEnvironment(
-            environment: environment,
-            fakeUpdatesAvailable: true
-        )
+        //upgradeEnvironment(
+        //    environment: environment,
+        //    fakeUpdatesAvailable: true
+        //)
 
         // Run the Core Project Tests again
-        coreKubicProjectTests(
-          environment: environment,
-          podName: 'default'
-        )
+        //coreKubicProjectTests(
+        //  environment: environment,
+        //  podName: 'default'
+        //)
     }
 }
