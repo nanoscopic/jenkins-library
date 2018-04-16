@@ -29,7 +29,7 @@ def call(Map parameters = [:]) {
                         sh("set -o pipefail; tox -e ${minion.role} --notest")
                     }
 
-                    sh("set -o pipefail; tox -e ${minion.role} -- --hosts ${minion.fqdn} --junit-xml testinfra-${minion.role}-${minion.index}.xml -v | tee -a ${WORKSPACE}/logs/testinfra-${minion.role}-${minion.index}.log")
+                    sh("set -o pipefail; tox -e ${minion.role}-${minion.status} -- --hosts ${minion.fqdn} --junit-xml testinfra-${minion.role}-${minion.index}.xml -v | tee -a ${WORKSPACE}/logs/testinfra-${minion.role}-${minion.index}.log")
                 }
 
                 parallelSteps.put("${minion.role}-${minion.index}", runTestInfraStep)
