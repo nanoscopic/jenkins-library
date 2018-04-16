@@ -29,6 +29,7 @@ class Environment implements Serializable {
             minion.role = tfMinion.role
             minion.minionId = tfMinion.minionId
             minion.proxyCommand = tfMinion.proxyCommand
+            minion.status = tfMinion.status
             minion.addresses.publicIpv4 = tfMinion.addresses.publicIpv4
             minion.addresses.privateIpv4 = tfMinion.addresses.privateIpv4
 

@@ -6,5 +6,6 @@ class Minion implements Serializable {
 	String role;
 	String minionId;
 	String proxyCommand;
+	String status;
 	Addresses addresses = new Addresses();
 }
