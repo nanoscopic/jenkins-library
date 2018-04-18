@@ -62,7 +62,7 @@ Environment call(Map parameters = [:]) {
             } finally {
                 archiveArtifacts(artifacts: "cluster.tf", fingerprint: true)
                 archiveArtifacts(artifacts: "terraform.tfstate", fingerprint: true)
-                sh(script: "cp terraform.tfstate $WORKSPACE/terraform.tfstate-after_update_deployment-${new Date().format('yMd-hms')}")
+                sh(script: "cp terraform.tfstate $WORKSPACE/logs/terraform.tfstate-after_update_deployment-${new Date().format('yMd-hms')}")
             }
 
             // Read the generated environment file
