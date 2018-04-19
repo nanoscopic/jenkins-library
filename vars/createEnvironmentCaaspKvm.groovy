@@ -54,7 +54,7 @@ Environment call(Map parameters = [:]) {
                     string(credentialsId: 'caasp-proxy-host', variable: 'proxy'),
                     string(credentialsId: 'caasp-location', variable: 'location')
                 ]) {
-                    sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --build --disable-meltdown-spectre-fixes -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} ${extraRepo} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-build.log")
+                    sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --build -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} ${extraRepo} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-build.log")
                 }
             } finally {
                 archiveArtifacts(artifacts: "cluster.tf", fingerprint: true)
