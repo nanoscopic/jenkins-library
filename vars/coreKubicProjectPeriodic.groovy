@@ -52,8 +52,15 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body = n
                 body.delegate = delegate
 
                 // Execute the body of the test
-                body()
+                def bodyResult = body()
+                if (bodyResult instanceof Environment) {
+                    // TODO: Update closures to always return the environment, to
+                    // handle cases where the closure modify the environment.
+                    environment = bodyResult
+                }
             }
+
+            return environment
         }
     } catch (e) {
         echo "Sending failure notification"

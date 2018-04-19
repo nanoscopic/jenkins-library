@@ -21,10 +21,15 @@ Environment call(Map parameters = [:]) {
     Environment environment = parameters.get('environment')
 
     timeout(125) {
-        dir('automation/velum-bootstrap') {
-            try {
-                sh(script: './velum-interactions --node-add')
-            } finally {
+        try {
+            dir('automation/velum-bootstrap') {
+                sh(script: './velum-interactions --node-add --environment ${WORKSPACE}/environment.json')
+            }
+
+            // Read the updated environment file
+            environment = new Environment(readJSON(file: 'environment.json'))
+        } finally {
+            dir('automation/velum-bootstrap') {
                 junit "velum-bootstrap.xml"
                 try {
                     archiveArtifacts(artifacts: "screenshots/**")
@@ -35,4 +40,6 @@ Environment call(Map parameters = [:]) {
             }
         }
     }
+
+    return environment
 }
