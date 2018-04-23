@@ -60,7 +60,7 @@ Environment call(Map parameters = [:]) {
                     String timestamp = new Date().format('yMd-hms')
                     sh(script: "cp cluster.tf $WORKSPACE/logs/cluster.tf-before_update_deployment-${timestamp}")
                     sh(script: "cp terraform.tfstate $WORKSPACE/logs/terraform.tfstate-before_update_deployment-${timestamp}")
-                    sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --update-deployment --disable-meltdown-spectre-fixes -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} ${extraRepo} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-update.log")
+                    sh(script: "set -o pipefail; ./caasp-kvm -P ${proxy} -L ${location} ${vanillaFlag} --update-deployment -m ${masterCount} -w ${workerCount} --image ${options.image} --velum-image ${velumImage} --admin-ram ${options.adminRam} --admin-cpu ${options.adminCpu} --master-ram ${options.masterRam} --master-cpu ${options.masterCpu} --worker-ram ${options.workerRam} --worker-cpu ${options.workerCpu} ${extraRepo} 2>&1 | tee ${WORKSPACE}/logs/caasp-kvm-update.log")
                 }
             } finally {
                 archiveArtifacts(artifacts: "cluster.tf", fingerprint: true)
