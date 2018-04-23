@@ -31,6 +31,9 @@ Environment call(Map parameters = [:]) {
                 sh(script: "./velum-interactions --bootstrap --download-kubeconfig --enable-tiller --environment ${WORKSPACE}/environment.json")
                 sh(script: "cp kubeconfig ${WORKSPACE}/kubeconfig")
             }
+
+            // Read the updated environment file
+            environment = new Environment(readJSON(file: 'environment.json'))
         } finally {
             dir('automation/velum-bootstrap') {
                 junit "velum-bootstrap.xml"
@@ -43,4 +46,6 @@ Environment call(Map parameters = [:]) {
             }
         }
     }
+
+    return environment
 }

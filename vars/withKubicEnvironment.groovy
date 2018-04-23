@@ -81,7 +81,12 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
                 preBootstrapBody.delegate = delegate
 
                 // Execute the preBootstrapBody of the test
-                preBootstrapBody()
+                def preBootstrapBodyResult = preBootstrapBody()
+                if (preBootstrapBodyResult instanceof Environment) {
+                    // TODO: Update closures to always return the environment, to
+                    // handle cases where the closure modify the environment.
+                    environment = preBootstrapBodyResult
+                }
             }
 
             // Configure the Kubic environment
@@ -103,7 +108,7 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
             // Bootstrap the Kubic environment
             // and fetch ${WORKSPACE}/kubeconfig
             stage('Bootstrap Environment') {
-                bootstrapEnvironment(environment: environment)
+                environment = bootstrapEnvironment(environment: environment)
             }
 
             // Prepare the body closure delegate
@@ -114,7 +119,12 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
             body.delegate = delegate
 
             // Execute the body of the test
-            body()
+            def bodyResult = body()
+            if (bodyResult instanceof Environment) {
+                // TODO: Update closures to always return the environment, to
+                // handle cases where the closure modify the environment.
+                environment = bodyResult
+            }
         } finally {
             // Gather logs from the environment
             stage('Gather Logs') {

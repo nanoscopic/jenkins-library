@@ -22,8 +22,11 @@ Environment call(Map parameters = [:]) {
     timeout(125) {
         try {
             dir('automation/velum-bootstrap') {
-                sh(script: './velum-interactions --node-remove')
+                sh(script: './velum-interactions --node-remove --environment ${WORKSPACE}/environment.json')
             }
+
+            // Read the updated environment file
+            environment = new Environment(readJSON(file: 'environment.json'))
         } finally {
             dir('automation/velum-bootstrap') {
                 junit "velum-bootstrap.xml"
@@ -36,4 +39,6 @@ Environment call(Map parameters = [:]) {
             }
         }
     }
+
+    return environment
 }
