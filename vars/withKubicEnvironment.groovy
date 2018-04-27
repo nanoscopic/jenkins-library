@@ -105,6 +105,10 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
                 )
             }
 
+            // Setup network emulation
+            // FIXME run on dedicated pipeline
+            sh(script: './automation/misc-tools/network-emulation setup all --env-json-path ${WORKSPACE}/environment.json -l ${WORKSPACE}/logs/netem-setup.log')
+
             // Bootstrap the Kubic environment
             // and fetch ${WORKSPACE}/kubeconfig
             stage('Bootstrap Environment') {
@@ -126,6 +130,10 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
                 environment = bodyResult
             }
         } finally {
+
+            // FIXME run on dedicated pipeline
+            sh(script: './automation/misc-tools/network-emulation reset all --env-json-path ${WORKSPACE}/environment.json -l ${WORKSPACE}/logs/netem-reset.log')
+
             // Gather logs from the environment
             stage('Gather Logs') {
                 try {

@@ -22,7 +22,8 @@ def call(Map parameters = [:]) {
 
     timeout(5) {
         parallel 'automation': {
-            cloneKubicRepo(gitBase: gitBase, branch: branch, credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "automation")
+            // FIXME WIP
+            cloneKubicRepo(gitBase: gitBase, branch: "netem", credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "automation")
         },
         'salt': {
             cloneKubicRepo(gitBase: gitBase, branch: branch, credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "salt")
