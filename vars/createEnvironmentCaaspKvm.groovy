@@ -52,7 +52,7 @@ Environment call(Map parameters = [:]) {
         extraRepo = "--extra-repo ${options.extraRepo}"
     }
 
-    timeout(120) {
+    timeout(45) {
         dir('automation/caasp-kvm') {
             try {
                 withCredentials([

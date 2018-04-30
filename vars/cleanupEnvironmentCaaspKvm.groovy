@@ -13,7 +13,7 @@
 // limitations under the License.
 def call(Map parameters = [:]) {
     try {
-        timeout(60) {
+        timeout(15) {
             dir('automation/caasp-kvm') {
                 ansiColor('xterm') {
                     withCredentials([string(credentialsId: 'caasp-proxy-host', variable: 'CAASP_PROXY')]) {
