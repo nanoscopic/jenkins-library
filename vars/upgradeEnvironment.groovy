@@ -41,7 +41,7 @@ Environment call(Map parameters = [:]) {
         shOnMinion(minion: adminMinion, script: "docker exec -i \\\$(docker ps | grep salt-master | awk '{print \\\$1}') salt '*' saltutil.refresh_grains")
 
         // Perform the upgrade
-        timeout(125) {
+        timeout(185) {
             try {
                 dir('automation/velum-bootstrap') {
                     sh(script: "./velum-interactions --update-admin --environment ${WORKSPACE}/environment.json")
