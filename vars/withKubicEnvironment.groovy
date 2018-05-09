@@ -33,6 +33,7 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
         stage('Node Info') {
             echo "Node: ${env.NODE_NAME}"
             echo "Workspace: ${env.WORKSPACE}"
+            sh(script: 'env')
             sh(script: 'ip a')
             sh(script: 'ip r')
             sh(script: 'cat /etc/resolv.conf')
