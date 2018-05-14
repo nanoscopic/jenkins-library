@@ -14,6 +14,8 @@
 def call() {
     echo "Starting Kubic core project housekeeping"
 
+    def label = "housekeeping-${UUID.randomUUID().toString()}"
+
     podTemplate(label: label, containers: [
         containerTemplate(
             name: 'opensuse',
