@@ -41,7 +41,7 @@ def call() {
                     echo "Add a backport label if needed"
                     if (changeTarget.matches(/release-\d\.\d/) && !pullRequest.labels.contains("${changeTarget}-backport")) {
                         echo "Adding backport label: ${changeTarget}-backport"
-                        pullRequest.addLabels(["${changeTarget}-backport"])
+                        pullRequest.addLabels(["${changeTarget}-backport".toString()])
                     }
 
                     // Remove any invalid backport labels
@@ -52,7 +52,7 @@ def call() {
                     //     echo "Checking label: ${prLabel}"
                     //     if (prLabel.matches(/release-\d\.\d-backport/) && prLabel != changeTarget + '-backport') {
                     //         echo "Removing label: ${prLabel}"
-                    //         pullRequest.removeLabel(prLabel)
+                    //         pullRequest.removeLabel(prLabel.toString())
                     //         echo "Removed label: ${prLabel}"
                     //     }
                     // }
