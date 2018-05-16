@@ -19,29 +19,31 @@ def call(Map parameters = [:]) {
     String user = parameters.get('user')
     String credentialsId = parameters.get('credentialsId')
 
-    // Check if a change is from collaborator, or not.
-    // Require approval for non-collaborators. As non-collaborators are
-    // already considered untrusted by Jenkins, Jenkins will load the
-    // Pipeline and library from the target branch and NOT from the
-    // outside collaborators fork / pull request.
-    stage('Collaborator Check') {
-        def membersResponse = httpRequest(
-            url: "https://api.github.com/repos/${org}/${repo}/collaborators/${user}",
-            authentication: credentialsId,
-            validResponseCodes: "204:404")
+    if (env.CHANGE_AUTHOR != null) {
+        // Check if a change is from collaborator, or not.
+        // Require approval for non-collaborators. As non-collaborators are
+        // already considered untrusted by Jenkins, Jenkins will load the
+        // Pipeline and library from the target branch and NOT from the
+        // outside collaborators fork / pull request.
+        stage('Collaborator Check') {
+            def membersResponse = httpRequest(
+                url: "https://api.github.com/repos/${org}/${repo}/collaborators/${user}",
+                authentication: credentialsId,
+                validResponseCodes: "204:404")
 
-        if (membersResponse.status == 204) {
-            echo "Test execution for collaborator ${user} allowed"
+            if (membersResponse.status == 204) {
+                echo "Test execution for collaborator ${user} allowed"
 
-        } else {
-            def allowExecution = input(id: 'userInput', message: "Change author is not a ${org} member: ${user}", parameters: [
-                booleanParam(name: 'allowExecution', defaultValue: false, description: 'Run tests anyway?')
-            ])
+            } else {
+                def allowExecution = input(id: 'userInput', message: "Change author is not a ${org} member: ${user}", parameters: [
+                    booleanParam(name: 'allowExecution', defaultValue: false, description: 'Run tests anyway?')
+                ])
 
-            if (!allowExecution) {
-                echo "Test execution for unknown user (${user}) disallowed"
-                error(message: "Test execution for unknown user (${user}) disallowed")
-                return;
+                if (!allowExecution) {
+                    echo "Test execution for unknown user (${user}) disallowed"
+                    error(message: "Test execution for unknown user (${user}) disallowed")
+                    return;
+                }
             }
         }
     }
