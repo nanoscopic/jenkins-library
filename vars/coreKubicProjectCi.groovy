@@ -14,15 +14,13 @@
 def call() {
     echo "Starting Kubic core project CI"
 
-    if (env.CHANGE_AUTHOR != null) {
-        // TODO: Don't hardcode salt repo name, find the right place
-        // to lookup this information dynamically.
-        githubCollaboratorCheck(
-            org: 'kubic-project',
-            repo: 'salt',
-            user: env.CHANGE_AUTHOR,
-            credentialsId: 'github-token')
-    }
+    // TODO: Don't hardcode salt repo name, find the right place
+    // to lookup this information dynamically.
+    githubCollaboratorCheck(
+        org: 'kubic-project',
+        repo: 'salt',
+        user: env.CHANGE_AUTHOR,
+        credentialsId: 'github-token')
 
     // Configure the job properties
     properties([

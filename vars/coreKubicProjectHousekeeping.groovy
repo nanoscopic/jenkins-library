@@ -14,6 +14,14 @@
 def call() {
     echo "Starting Kubic core project housekeeping"
 
+    // TODO: Don't hardcode salt repo name, find the right place
+    // to lookup this information dynamically.
+    githubCollaboratorCheck(
+        org: 'kubic-project',
+        repo: 'salt',
+        user: env.CHANGE_AUTHOR,
+        credentialsId: 'github-token')
+
     def label = "housekeeping-${UUID.randomUUID().toString()}"
 
     podTemplate(label: label, containers: [
