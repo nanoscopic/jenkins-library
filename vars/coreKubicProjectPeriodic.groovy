@@ -32,8 +32,11 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body = n
                 gitBranch: env.getEnvironment().get('CHANGE_TARGET', env.BRANCH_NAME),
                 gitCredentialsId: 'github-token',
                 masterCount: masterCount,
-                workerCount: workerCount,
-                preBootstrapBody: preBootstrapBody) {
+                workerCount: workerCount)
+        {
+            // preBootstrapBody
+            preBootstrapBody()
+        }{
 
             // Run the Core Project Tests
             coreKubicProjectTests(

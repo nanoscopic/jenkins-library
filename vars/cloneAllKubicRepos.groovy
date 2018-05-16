@@ -22,7 +22,7 @@ def call(Map parameters = [:]) {
 
     timeout(5) {
         parallel 'automation': {
-            cloneKubicRepo(gitBase: gitBase, branch: branch, credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "automation")
+            cloneKubicRepo(gitBase: gitBase, branch: "preBootstrapBody", credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "automation")
         },
         'salt': {
             cloneKubicRepo(gitBase: gitBase, branch: branch, credentialsId: credentialsId, ignorePullRequest: ignorePullRequest, repo: "salt")

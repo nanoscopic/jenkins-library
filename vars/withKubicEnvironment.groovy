@@ -13,7 +13,7 @@
 // limitations under the License.
 import com.suse.kubic.Environment
 
-def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
+def call(Map parameters = [:], Closure preBootstrapBody, Closure body) {
     def nodeLabel = parameters.get('nodeLabel', 'leap42.3&&32GB')
     def environmentType = parameters.get('environmentType', 'caasp-kvm')
     def environmentTypeOptions = parameters.get('environmentTypeOptions', null)
@@ -78,6 +78,7 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
             }
 
             if (preBootstrapBody != null) {
+                echo "Running preBootstrapBody"
                 // Prepare the body closure delegate
                 def delegate = [:]
                 // Set some context variables available inside the preBootstrapBody() method
@@ -92,6 +93,8 @@ def call(Map parameters = [:], Closure preBootstrapBody = null, Closure body) {
                     // handle cases where the closure modify the environment.
                     environment = preBootstrapBodyResult
                 }
+            } else {
+              echo "No preBootstrapBody to run"
             }
 
             // Configure the Kubic environment
