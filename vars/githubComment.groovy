@@ -29,5 +29,4 @@ def call(Map parameters = [:]) {
         validResponseCodes: "201:201",
         httpMode: 'POST',
         requestBody: "{\"body\": \"${message}\"}")
-    }
 }
