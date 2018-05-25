@@ -44,7 +44,8 @@ def call(Map parameters = [:]) {
     timeout(10) {
       sh(script: "mkdir ${WORKSPACE}/logs/supportconfig_salt_events/")
       dir("${WORKSPACE}/logs/supportconfig_salt_events/") {
-        sh(script: "find ${WORKSPACE}/logs/ -name 'nts_*.tbz' -exec ${WORKSPACE}/automation/misc-tools/supportutils-parser -w -i {} \\;")
+        sh(script: "find ${WORKSPACE}/logs/ -name 'nts_*.tbz' -print0 | xargs -I ! -0 sh -c 'export F=\"!\"; tar -Oxf \$F */salt-events-summary.txt > \"\${F%%tbz}salt_failures.txt\"'")
+        sh(script: "find ${WORKSPACE}/logs/ -name 'nts_*.tbz' -print0 | xargs -I ! -0 sh -c 'export F=\"!\"; tar -Oxf \$F */salt-events.json > \"\${F%%tbz}salt_failures_full.json\"'")
       }
     }
 }
